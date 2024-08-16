@@ -1,70 +1,66 @@
-; ==========================
-;Henru_Matthis_u23526158; Group member 01: Name_Surname_student-nr
-; Group member 02: Name_Surname_student-nr
-; Group member 03: Name_Surname_student-nr
-; ==========================
-
 section .data
-    fmt db "%c", 0
-    ; Do not modify anything above this line unless you know what you are doing
-    ; ==========================
-    ; Your data goes here
-    ; ==========================
-     xor_key dd 0x73113777 ;xor key
-    
-
-    
+    fmt db "%d ", 0                  ; Format string for printf to print integer
+    prompt_msg db "Enter plaintext to encrypt: ", 0
+    cipher_msg db "The cipher text is: ", 0
+    scanf_fmt db "%4s", 0            ; Format string for scanf to read 4 characters
 
 section .bss
-    ; ==========================
-    ; Your data goes here
-    ; ==========================
+    plaintext resb 5                 ; Reserve 5 bytes for the plaintext input (4 + 1 for null terminator)
+    cipher resd 4                    ; Reserve space for the cipher text (4 integers)
 
 section .text
     global encrypt_and_print
 
 extern printf
+extern scanf
 
-;When using the below function, be sure to place whatever you want to print in the rax register first
+; Function to print a single integer from the rax register using printf
 print_char_32:
-    mov rsi, rax
-    mov rdi, fmt
-    xor rax, rax
-    call printf
+    mov rsi, rax                     ; Move integer to rsi
+    mov rdi, fmt                     ; Format string in rdi
+    xor rax, rax                     ; Clear rax for printf
+    call printf                      ; Call printf
     ret
 
-; Kinda works
-; encrypt_and_print:
-;     ; Assuming RSI contains the address of the string to be encrypted
-;     mov al, [rsi]           ; Load the first character
-;     rol al, 4               ; Rotate the character left by 4 bits
-;     xor eax, dword [xor_key] ; XOR with the key
-
-;     ; Print the result of the XOR operation (for debugging)
-;     push rax
-;     mov rsi, rax
-;     mov rdi, fmt
-;     xor rax, rax
-;     call printf
-;     pop rax
-
-;     ret
 encrypt_and_print:
-    mov rcx, 4               ; Assume 4 characters to encrypt
-    xor rbx, rbx             ; Clear rbx, use it as an index for the string
+    ; Step 1: Display "Enter plaintext to encrypt: "
+    mov rdi, prompt_msg              ; Load the address of the prompt message
+    xor rax, rax                     ; Clear rax for printf
+    call printf                      ; Display the message
+
+    ; Step 2: Read 4 bytes of plaintext input
+    mov rdi, plaintext               ; Load the address of the plaintext buffer
+    mov rsi, scanf_fmt               ; Format string to read 4 characters
+    xor rax, rax                     ; Clear rax for scanf
+    call scanf                       ; Read the input from the user
+
+    ; Step 3: Display "The cipher text is: "
+    mov rdi, cipher_msg              ; Load the address of the cipher message
+    xor rax, rax                     ; Clear rax for printf
+    call printf                      ; Display the message
+
+    ; Step 4: Encrypt each character and print the result
+    mov rcx, 4                       ; Set loop counter to 4 (for 4 characters)
+    lea rsi, [plaintext]             ; Load address of plaintext into rsi
+    lea rdi, [cipher]                ; Load address of cipher into rdi
 
 encrypt_loop:
-    mov al, [rsi + rbx]      ; Load the current character
-    rol al, 4                ; Rotate the character left by 4 bits
-    xor eax, dword [xor_key] ; XOR with the key
+    ; Load a character from plaintext
+    mov al, byte [rsi]
+    ; Convert to integer (ASCII value)
+    movzx eax, al
+    ; Store the result in the cipher array
+    mov [rdi], eax
+    ; Print the encrypted integer using the provided function
+    call print_char_32
 
-    ; Print the encrypted result (for debugging)
-    mov rdi, fmt
-    mov rsi, rax
-    xor rax, rax             ; Clear rax before calling printf
-    call printf
+    ; Increment rsi to point to the next character
+    inc rsi
+    ; Increment rdi to point to the next integer in cipher
+    add rdi, 4
+    ; Decrement rcx, and loop back if not zero
+    loop encrypt_loop
 
-    add rbx, 1               ; Move to the next character
-    loop encrypt_loop        ; Repeat for each character
-make 
+    ; Return from the function
+    xor rax, rax                     ; Return value 0
     ret

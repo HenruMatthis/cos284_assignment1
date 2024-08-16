@@ -6,7 +6,9 @@
 
 section .data
     ; ==========================
-    fmt db "Welcome agent. What do you want to do, Encrypt [1] or Decrypt [2]? ", 10, 0       ; Your data goes here
+    fmt db "Welcome agent. What do you want to do, Encrypt [1] or Decrypt [2]? ",10  
+    fmt_len equ $-fmt   ; Your data goes here
+
     ; ==========================
 
 section .text
@@ -22,7 +24,12 @@ greeting:
     mov rax, 1              ; sys_write
     mov rdi, 1              ; stdout
     mov rsi, fmt    ; address of the message
-    mov rdx, 69         ; length of the message
+    mov rdx, fmt_len        ; length of the message
+
     syscall
+   ; mov rdx , 69
+     mov rax, 1                     ; sys_exit syscall number
+    xor rdi, rdi                    ; exit code 0
+              
 
     ret                         ; return from function
