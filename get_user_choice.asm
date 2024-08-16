@@ -43,7 +43,7 @@ get_user_choice:
     mov rax, 1             ; sys_write syscall number
     mov rdi, 1             ; file descriptor 1 (stdout)
     mov rsi, choice        ; address of the character to print
-    mov rdx, 1             ; length (1 byte)
+    mov rax, 1             ; length (1 byte)
     syscall
 
     ; ==========================

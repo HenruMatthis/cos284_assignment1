@@ -6,10 +6,9 @@
 
 section .data
     ; ==========================
-    fmt db "Welcome agent. What do you want to do, Encrypt [1] or Decrypt [2]? ",10  
-    fmt_len equ $-fmt   ; Your data goes here
-
-    ; ==========================
+     ; ==========================
+    greeting_message db "Welcome agent. What do you want to do, Encrypt [1] or Decrypt [2]?", 0
+    newline db 10, 0
 
 section .text
     global greeting
@@ -19,17 +18,15 @@ greeting:
     ; ==========================
     ; Your code goes here
     ; ==========================
+
+    ; Print greeting
+    mov eax, 4          ; syscall number for sys_write
+    mov ebx, 1          ; file descriptor 1 is stdout
+    mov ecx, greeting_message   ; message to write
+    mov edx, 66         ; message length
+    int 0x80            ; call kernel
+
+    ; ==========================
     ; Do not modify anything below this line unless you know what you are doing
-        ; Print the welcome message
-    mov rax, 1              ; sys_write
-    mov rdi, 1              ; stdout
-    mov rsi, fmt    ; address of the message
-    mov rdx, fmt_len        ; length of the message
 
-    syscall
-   ; mov rdx , 69
-     mov rax, 1                     ; sys_exit syscall number
-    xor rdi, rdi                    ; exit code 0
-              
-
-    ret                         ; return from function
+    ret                 ; return from function
