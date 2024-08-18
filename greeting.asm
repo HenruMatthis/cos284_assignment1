@@ -6,7 +6,7 @@
 
 section .data
     ; ==========================
-     ; ==========================
+    ; ==========================
     greeting_message db "Welcome agent. What do you want to do, Encrypt [1] or Decrypt [2]?", 0
     newline db 10, 0
 

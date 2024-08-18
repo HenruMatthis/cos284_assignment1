@@ -1,29 +1,42 @@
 section .data
     fmt db "%u ", 0            ; Format string for printing an unsigned integer
-    xor_key dd 0x73113777       ; XOR key used for encryption
+    xor_key dd 0x73113777      ; XOR key used for encryption
 
 section .text
     global encrypt_and_print
 
 extern printf
 
+;When using the below function, be sure to place whatever you want to print in the rax register first
+print_char_32:
+    mov rsi, rax
+    mov rdi, fmt
+    xor rax, rax
+    call printf
+    ret
+
 encrypt_and_print:
-    ; Input pointer is in rdi (this would be passed from the C function)
-    mov rcx, 4              ; We expect 4 characters in the input string
+    mov ecx, 4                  ; Set loop counter to 4
+    mov al, byte [rdi]
 
 encrypt_loop:
-    ; Load and process each character
-    movzx eax, byte [rdi]   ; Load a character into eax and zero-extend to 32 bits
-    rol al, 4               ; Rotate the lower 8 bits (al) left by 4
-    xor eax, dword [xor_key]; XOR the 32-bit value in eax with the xor_key
+    cmp ecx, 0                  ; Check if loop counter is 0
+    je .end                     ; If 0, exit the loop
 
-    ; Print the encrypted integer value
-    mov rsi, rax            ; Move the 32-bit encrypted result into rsi
-    mov rdi, fmt            ; Load the format string into rdi
-    xor rax, rax            ; Clear rax before calling printf
-    call printf             ; Call printf to print the encrypted value
+    cmp al, 0                   ; Check for null-terminator
+    je .end                     ; If null-terminator, exit the loop
 
-    inc rdi                 ; Move to the next character in the input string
-    loop encrypt_loop       ; Loop until all characters are processed
+    movzx rax, al
+    rol rax, 4                  ; Rotate the lower 8 bits (al) left by 4
+    xor rax, [xor_key]          ; XOR the 32-bit value in eax with the xor_key
+    call print_char_32
 
-    ret                     ; Return from the function
+    inc rdi                     ; Move to the next character
+    mov ah, [rdi]               ; Load the next character into AL
+
+    loop encrypt_loop           ; Decrement loop counter and repeat
+
+.end:
+    ret
+
+
